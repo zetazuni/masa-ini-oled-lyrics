@@ -15,6 +15,7 @@ The recorded run (with the music) is in [`documentation/MasaIni_Demo.mp4`](docum
 | `MasaIni_Stamper.py` | PC tool to record lyric timings by tapping keys while the song plays |
 | `documentation/MasaIni_Presentation.html` | Interactive 5-slide presentation with a working browser simulator of the board. Open it in any browser, next to `MasaIni_Demo.mp4`. |
 | `documentation/MasaIni_Demo.mp4` | Web-sized recording of the real run (720p, 86 s) |
+| `documentation/Masa_Ini.mp3` | Audio clip the simulator plays. It starts when the countdown ends, at the first lyric. |
 | `PROJECT_NOTES.md` | Detailed development notes: architecture, settings, issues fixed, ideas |
 
 ## Hardware
