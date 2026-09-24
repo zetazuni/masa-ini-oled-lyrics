@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Masa Ini OLED</title>
+<meta name="description" content="Interactive presentation: time-synced lyrics on the built-in OLED of a Heltec WiFi LoRa 32 V4, with a working browser simulator.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -46,6 +47,9 @@ code,.mono{font-family:var(--mono)}
 .iconbtn:hover{border-color:var(--cyan)}
 .askbtn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--cyan);background:var(--cyan-d);color:var(--text);cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap}
 .askbtn .ic{font-size:18px;color:var(--cyan)}
+.ghbtn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap}
+.ghbtn:hover{border-color:var(--cyan)}
+.ghbtn .ic{font-size:18px}
 
 /* deck */
 #deck{position:relative;overflow:hidden;min-height:0}
@@ -172,14 +176,17 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
 .stat b{font:500 16px var(--mono)}
 
 /* slide 5 */
-.s5top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,3.5vw,48px);align-items:start}
+.s5top{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(20px,3.5vw,48px);align-items:start}
+.vwrap{display:flex;flex-direction:column;gap:8px;align-items:center}
+.vplayer{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:20px;overflow:hidden;border:2px solid #3a4a6b;background:#000;box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.vplayer video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
 .setup{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px}
 .setup svg{display:block;width:100%;height:auto}
 .steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;font-size:.98rem}
 .steps li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--cyan-d);border:1px solid var(--cyan);color:var(--cyan);font:600 13px var(--mono)}
 .steps li span{color:var(--mute)}
-.video{display:flex;gap:18px;align-items:center;background:linear-gradient(135deg,#0f2035,#0f1729 60%);border:1px solid #2d4a75;border-radius:18px;padding:16px}
+.video{display:flex;gap:20px;align-items:center;background:linear-gradient(135deg,#0f2035,#0f1729 60%);border:1px solid #2d4a75;border-radius:18px;padding:16px}
 .phone{flex:none;width:118px;aspect-ratio:9/16;border-radius:20px;border:2px solid #3a4a6b;background:#03060b;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:8px;position:relative;overflow:hidden}
 .phone canvas{width:100%;image-rendering:pixelated;filter:drop-shadow(0 0 5px rgba(63,216,245,.45))}
 .phone .play{position:absolute;right:8px;bottom:8px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:13px}
@@ -228,6 +235,7 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
 /* responsive */
 @media (max-width:980px){
   .hero,.s2top,.simgrid,.s5top{grid-template-columns:minmax(0,1fr)}
+  .vwrap{align-items:center}
   .algo{grid-template-columns:minmax(0,1fr)}
   .pipe,.grp{flex-direction:column}
   .arr{width:auto;height:26px}
@@ -237,8 +245,8 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
 @media (max-width:640px){
   .tabs button .l{display:none}
   .brand span{display:none}
-  .askbtn span{display:none}
-  .askbtn{padding:0 10px}
+  .askbtn span,.ghbtn span{display:none}
+  .askbtn,.ghbtn{padding:0 10px}
   .video{flex-direction:column;align-items:flex-start}
   .stats{grid-template-columns:1fr 1fr}
   body{font-size:16px}
@@ -288,6 +296,7 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
   <header class="bar">
     <div class="brand"><svg class="ic"><use href="#i-board"/></svg><span>Masa Ini · OLED</span></div>
     <nav class="tabs" id="tabs" aria-label="Slides"></nav>
+    <a class="ghbtn" href="https://github.com/zetazuni/masa-ini-oled-lyrics" target="_blank" rel="noopener" aria-label="GitHub repository"><svg class="ic"><use href="#i-code"/></svg><span>GitHub</span></a>
     <button class="askbtn" id="askBtn" hidden><svg class="ic"><use href="#i-spark"/></svg><span>Ask Claude</span></button>
     <button class="iconbtn" id="fsBtn" aria-label="Toggle full screen" title="Full screen" hidden><svg class="ic"><use href="#i-full"/></svg></button>
   </header>
@@ -483,7 +492,12 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
       <div class="wrap">
         <div class="headrow"><p class="eyebrow">Implementation example</p><h2>Filmed on a phone, in sync with the song</h2></div>
         <div class="s5top">
-          <div class="setup">
+          <div class="vwrap">
+            <div class="vplayer"><video id="demo" controls playsinline preload="metadata" src="MasaIni_Demo.mp4#t=0.1" aria-label="The real run: lyrics on the OLED with the song playing">Your browser cannot play this video. <a href="MasaIni_Demo.mp4">Download it</a>.</video></div>
+            <p class="cap">The real run, with the music synced to the display.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+            <div class="setup">
             <svg viewBox="0 0 520 290" role="img" aria-label="Setup: a laptop plays the song, the board shows lyrics, a phone on a tripod films the board and hears the song">
               <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1l8 4-8 4z" fill="#8ea6d1"/></marker></defs>
               <!-- laptop -->
@@ -513,7 +527,6 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
               <text x="62" y="214" fill="#93a4c0" font-size="13" font-family="IBM Plex Mono">together</text>
             </svg>
           </div>
-          <div style="display:flex;flex-direction:column;gap:18px">
             <ol class="steps">
               <li><div><b>Stamp the song.</b> <span>Run the Python tool, press T as the song starts, then SPACE on every line.</span></div></li>
               <li><div><b>Flash the board.</b> <span>Upload with the V4 board, GC1109_PA and USB CDC on boot.</span></div></li>
@@ -524,14 +537,13 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
           </div>
         </div>
         <div class="video">
-          <div class="phone" aria-hidden="true"><canvas width="128" height="64" data-frame="two"></canvas><div class="bar2"><i></i></div><div class="play"><svg class="ic"><use href="#i-play"/></svg></div></div>
+          <div class="ico" style="width:56px;height:56px;font-size:30px"><svg class="ic"><use href="#i-code"/></svg></div>
           <div class="vtxt">
-            <p class="eyebrow">Watch it</p>
-            <h3 style="font-size:1.4rem">The full run, with the music synced to the display</h3>
-            <p class="mute">The Shorts video shows the real board on the desk while the song plays and every line lands on cue.</p>
-            <div class="url"><a class="cta" href="https://youtube.com/shorts/WRwJjsb_33M" target="_blank" rel="noopener"><svg class="ic"><use href="#i-yt"/></svg>Open on YouTube<svg class="ic"><use href="#i-ext"/></svg></a>
+            <p class="eyebrow">Source code</p>
+            <h3 style="font-size:1.4rem">Build your own: firmware, stamper and this deck are on GitHub</h3>
+            <div class="url"><a class="cta" href="https://github.com/zetazuni/masa-ini-oled-lyrics" target="_blank" rel="noopener"><svg class="ic"><use href="#i-code"/></svg>Open the repository<svg class="ic"><use href="#i-ext"/></svg></a>
               <button class="ghost" id="copyUrl" type="button"><svg class="ic" style="vertical-align:-3px"><use href="#i-copy"/></svg> Copy link</button></div>
-            <code>https://youtube.com/shorts/WRwJjsb_33M</code>
+            <code>https://github.com/zetazuni/masa-ini-oled-lyrics</code>
           </div>
         </div>
         <div>
@@ -862,6 +874,7 @@ function go(n){
   $('#prev').disabled=n===0;$('#next').disabled=n===slides.length-1;
   $('#progBar').style.width=((n+1)/slides.length*100)+'%';
   slides[n].scrollTop=0;
+  var dv=$('#demo');if(dv&&n!==4)try{dv.pause()}catch(e){}
   if(n===2)updateStates();
   $('#askCtx').textContent='Slide '+(n+1)+': '+names[n];
   var b=$$('button',tabsEl)[n];if(b&&b.scrollIntoView)try{b.scrollIntoView({inline:'nearest',block:'nearest'})}catch(e){}
@@ -871,7 +884,7 @@ $('#next').addEventListener('click',function(){go(cur+1)});
 document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName;
   if(e.key==='Escape'&&!$('#ask').hidden){toggleAsk(false);return}
-  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||t==='VIDEO')return;
   if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);
   else if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);
   else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
@@ -893,7 +906,7 @@ $('#subtabs').addEventListener('click',function(e){
   if(b.getAttribute('data-p')==='p2')updateStates();
 });
 $('#copyUrl').addEventListener('click',function(){
-  var b=this,u='https://youtube.com/shorts/WRwJjsb_33M';
+  var b=this,u='https://github.com/zetazuni/masa-ini-oled-lyrics';
   function done(t){var o=b.innerHTML;b.textContent=t;setTimeout(function(){b.innerHTML=o},1600)}
   try{navigator.clipboard.writeText(u).then(function(){done('Copied')},function(){done('Select the link below')})}catch(e){done('Select the link below')}
 });
@@ -928,7 +941,7 @@ var CONTEXT=[
  '- Firmware state machine: INTRO (6 s) -> WAITING -> PLAYING <-> PAUSED, PLAYING -> DONE, DONE -> PLAYING. BOOT starts, pauses, resumes or replays.',
  '- Clock: elapsed = millis() - songStart - SYNC_OFFSET_MS. On BOOT, songStart = millis() - (firstLyricStart - PRE_ROLL_MS) so the first lyric (at 99.44 s) appears 5 s later; the song is started at 1:34 at the same moment.',
  '- Current line: scan the table backwards for startMs <= t < endMs. Long lyrics split at the space that minimises the longer half. Progress bar and header clock run from the first lyric to the end. Button debounce is non-blocking.',
- '- The video of the real run with music is at https://youtube.com/shorts/WRwJjsb_33M.',
+ '- The video of the real run with music is embedded on slide 5. Source code: https://github.com/zetazuni/masa-ini-oled-lyrics (MIT license).',
  '- The deck has 5 slides: 1 Inspiration, 2 Hardware and software, 3 Architecture, 4 Simulation (a browser simulator of the board), 5 Implementation.',
  'Known limits: sync is manual (BOOT and playback are started by hand), and timings were stamped by ear.'
 ].join('\n');
