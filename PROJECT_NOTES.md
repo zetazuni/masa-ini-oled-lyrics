@@ -149,3 +149,42 @@ python "S:\Masa Ini\MasaIni_Stamper.py"
 ```
 
 Customisation knobs: contrast `disp.setContrast(255)`, note speed (`< 80` ms in `updateNotes()`), `SYNC_OFFSET_MS`, intro duration (`t > 6000` in `drawIntro()`).
+
+## 9. Deployment rules and hosting
+
+**Rule: deploy to Netlify only when explicitly asked.** Each deploy uses Netlify credits, so editing the presentation, the firmware or the docs never triggers a deploy by itself. Local edits, rebuilds and syntax checks are free. Say "deploy" (or "publish") to release.
+
+Other actions follow the same idea: push to GitHub and flash the board only when asked.
+
+### Where things live
+
+| What | Where |
+|---|---|
+| Netlify site | https://masa-ini-oled-lyrics.netlify.app (project `masa-ini-oled-lyrics`, ID `2de90263-db80-4ef8-840e-cfde7f2de677`, account slug `amiripin2001`) |
+| GitHub repo | https://github.com/zetazuni/masa-ini-oled-lyrics |
+| Presentation (local, for GitHub) | `documentation/MasaIni_Presentation.html` (real lyrics) |
+| Site build (public) | `index.html` with placeholder lyric lines, plus `MasaIni_Demo.mp4` and `Masa_Ini.mp3` |
+| Full-size recording | `documentation/Masa ini.mp4` (231 MB, local only, git-ignored) |
+
+### How to deploy (only when asked)
+
+1. Rebuild the presentation from its template. The site copy replaces each lyric with a neutral placeholder (`Baris lirik N`), keeping the timings.
+2. Put `index.html`, `MasaIni_Demo.mp4` and `Masa_Ini.mp3` in one folder.
+3. `netlify deploy --prod --dir <folder> --site 2de90263-db80-4ef8-840e-cfde7f2de677`
+4. Check that `/`, `/MasaIni_Demo.mp4` and `/Masa_Ini.mp3` return 200.
+
+The audio file must be named in lowercase (`Masa_Ini.mp3`): Netlify treats file names as case-sensitive.
+
+### Deploy status (remind the user when it is out of date)
+
+Whenever `documentation/MasaIni_Presentation.html` (or the video or audio) changes after the last deploy, **remind the user that the live site is not yet updated** and offer to deploy. Do not deploy on your own.
+
+Check with `sha256sum documentation/MasaIni_Presentation.html` and compare it with the value below. A different value means the site is behind.
+
+| | |
+|---|---|
+| Last deployed | 2026-09-24 (countdown-only wait screen, sliders from first lyric) |
+| Presentation SHA-256 at that deploy | `431fb6be220aac40237a2c5d6147df5e98cd95138e796570561621fae9b2ed79` |
+| Git commit at that deploy | `8848fbf` |
+
+After a deploy, update this table with the new hash and date.

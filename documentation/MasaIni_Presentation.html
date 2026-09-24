@@ -472,11 +472,11 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
           <div class="ctl">
             <button class="cta" id="bootBtn"><svg class="ic"><use href="#i-button"/></svg><span id="bootLbl">Press BOOT to start</span></button>
             <div class="fld"><label id="spLbl">Simulation speed</label>
-              <div class="seg" role="group" aria-labelledby="spLbl"><button data-speed="1" aria-pressed="true">1×</button><button data-speed="5" aria-pressed="false">5×</button><button data-speed="20" aria-pressed="false">20×</button></div></div>
+              <div class="seg" role="group" aria-labelledby="spLbl"><button data-speed="1" aria-pressed="true">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="false">4×</button></div></div>
             <div class="fld"><label for="preRoll">Countdown length <output id="preRollOut">5.0 s</output></label><input type="range" id="preRoll" min="1000" max="10000" step="500" value="5000"></div>
             <div class="fld"><label for="syncOff">Sync offset <output id="syncOut">0 ms</output></label><input type="range" id="syncOff" min="-1000" max="1000" step="50" value="0"></div>
             <div class="fld"><label for="scrub">Time since first lyric <output id="scrubOut">00:00</output></label><input type="range" id="scrub" min="0" max="79" step="1" value="0"></div>
-            <div class="fld"><label for="musicOn" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="musicOn" checked style="accent-color:var(--cyan);width:18px;height:18px"><span>Play the song when the countdown ends</span></label><p class="sm mute" style="margin-top:2px">Music: <output id="musicSt" style="color:var(--text)">ready</output>. It plays at 1× speed only.</p></div>
+            <div class="fld"><label for="musicOn" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="musicOn" checked style="accent-color:var(--cyan);width:18px;height:18px"><span>Play the song when the countdown ends</span></label><p class="sm mute" style="margin-top:2px">Music: <output id="musicSt" style="color:var(--text)">ready</output>. It follows the speed setting.</p></div>
             <div class="stats">
               <div class="stat"><small>State</small><b id="stState">INTRO</b></div>
               <div class="stat"><small>Since 1st lyric</small><b id="stTime">00:00.0</b></div>
@@ -834,16 +834,16 @@ function unlockAudio(){
 function syncMusic(){
   if(!music||musicBroken)return;
   var st=sim.state,first=LYR[0].s,raw=sim.now-sim.songStart,target=(raw-first)/1000;
-  var on=musicOn.checked,live=st==='PLAYING'&&sim.speed===1&&on;
+  var on=musicOn.checked,live=st==='PLAYING'&&on;
   var want=live&&raw>=first&&(!isFinite(music.duration)||target<music.duration);
   var msg;
   if(!on)msg='off';
-  else if(st==='PLAYING'&&sim.speed!==1)msg='paused (1× only)';
   else if(st==='PLAYING'&&raw<first)msg='starts after the countdown';
   else if(want)msg=blocked?'blocked, press BOOT again':'playing';
   else msg=st==='PAUSED'?'paused':'ready';
   if(musicSt.textContent!==msg)musicSt.textContent=msg;
   if(unlocking)return;
+  if(want&&music.playbackRate!==sim.speed)music.playbackRate=sim.speed;
   if(want){
     if(music.paused){
       if(!blocked){music.currentTime=Math.max(0,target);var p=music.play();if(p&&p.catch)p.catch(function(){blocked=true})}
