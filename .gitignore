@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+desktop.ini
+Thumbs.db
+# third-party Heltec datasheet, not redistributed here
+WiFi_LoRa_32_V4*.pdf
