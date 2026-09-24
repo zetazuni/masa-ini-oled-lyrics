@@ -437,7 +437,7 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
             <div class="card">
               <h3>Find the line for a time</h3>
               <div class="seg17" id="seg17" aria-hidden="true"></div>
-              <div class="fld"><label for="tScan">Song time <output id="tScanOut">02:18</output></label><input type="range" id="tScan" min="0" max="178" step="1" value="138"></div>
+              <div class="fld"><label for="tScan">Time since first lyric <output id="tScanOut">00:39</output></label><input type="range" id="tScan" min="0" max="79" step="1" value="39"></div>
               <div class="fx" id="scanOut">line 8 of 17</div>
               <p>Scan the table backwards for <code>startMs ≤ t &lt; endMs</code>. Nothing found means countdown or a rest.</p>
             </div>
@@ -473,13 +473,13 @@ input[type=range]{width:100%;accent-color:var(--cyan)}
             <button class="cta" id="bootBtn"><svg class="ic"><use href="#i-button"/></svg><span id="bootLbl">Press BOOT to start</span></button>
             <div class="fld"><label id="spLbl">Simulation speed</label>
               <div class="seg" role="group" aria-labelledby="spLbl"><button data-speed="1" aria-pressed="true">1×</button><button data-speed="5" aria-pressed="false">5×</button><button data-speed="20" aria-pressed="false">20×</button></div></div>
-            <div class="fld"><label for="preRoll">Pre-roll before first lyric <output id="preRollOut">5.0 s</output></label><input type="range" id="preRoll" min="0" max="10000" step="500" value="5000"></div>
+            <div class="fld"><label for="preRoll">Countdown length <output id="preRollOut">5.0 s</output></label><input type="range" id="preRoll" min="1000" max="10000" step="500" value="5000"></div>
             <div class="fld"><label for="syncOff">Sync offset <output id="syncOut">0 ms</output></label><input type="range" id="syncOff" min="-1000" max="1000" step="50" value="0"></div>
-            <div class="fld"><label for="scrub">Song position <output id="scrubOut">00:00</output></label><input type="range" id="scrub" min="0" max="178" step="1" value="0"></div>
+            <div class="fld"><label for="scrub">Time since first lyric <output id="scrubOut">00:00</output></label><input type="range" id="scrub" min="0" max="79" step="1" value="0"></div>
             <div class="fld"><label for="musicOn" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="musicOn" checked style="accent-color:var(--cyan);width:18px;height:18px"><span>Play the song when the countdown ends</span></label><p class="sm mute" style="margin-top:2px">Music: <output id="musicSt" style="color:var(--text)">ready</output>. It plays at 1× speed only.</p></div>
             <div class="stats">
               <div class="stat"><small>State</small><b id="stState">INTRO</b></div>
-              <div class="stat"><small>Clock</small><b id="stTime">00:00.0</b></div>
+              <div class="stat"><small>Since 1st lyric</small><b id="stTime">00:00.0</b></div>
               <div class="stat"><small>Line</small><b id="stLine">none</b></div>
               <div class="stat"><small>Next lyric</small><b id="stNext">n/a</b></div>
             </div>
@@ -719,13 +719,7 @@ Sim.prototype.drawLyrics=function(b,el,paused){
     var next=-1;for(var i=0;i<LYR.length;i++){if(el<LYR[i].s){next=i;break}}
     if(next>=0){
       var waitMs=LYR[next].s-el;
-      if(waitMs>5000){
-        ctr(b,'s','lirik dalam '+Math.floor(waitMs/1000)+'s...',33);
-        var barW=90,barX=Math.floor((128-barW)/2),f=Math.floor(el/LYR[next].s*barW);f=Math.min(f,barW);
-        frame(b,barX,40,barW,4);if(f>0)box(b,barX,40,f,4);
-      }else if(Math.floor(now/250)%2===0){
-        ctr(b,'l',String(Math.ceil(waitMs/1000)),38);
-      }
+      if(Math.floor(now/250)%2===0)ctr(b,'l',String(Math.ceil(waitMs/1000)),38);
     }else if(Math.floor(now/600)%2===0){ctr(b,'m','~ ~ ~',36)}
   }
 };
@@ -811,14 +805,19 @@ function updateUi(force){
   if(!force&&performance.now()-lastUi<100)return;
   lastUi=performance.now();
   var el=(st==='PLAYING'||st==='PAUSED')?sim.elapsed():0;
-  ui.time.textContent=(st==='PLAYING'||st==='PAUSED'||st==='DONE')?mmss(el)+'.'+Math.floor(el%1000/100):'00:00.0';
+  var first=LYR[0].s,span=DUR-first,live=(st==='PLAYING'||st==='PAUSED'),rel=el-first;
+  if(live)ui.time.textContent=rel<0?'-'+(-rel/1000).toFixed(1)+' s':mmss(rel)+'.'+Math.floor(rel%1000/100);
+  else ui.time.textContent=st==='DONE'?mmss(span)+'.0':'00:00.0';
   var idx=(st==='PLAYING'||st==='PAUSED')?findIdx(el):-1;
   ui.line.textContent=idx>=0?(idx+1)+' / '+LYR.length:'none';
   var nx='n/a';
   if((st==='PLAYING'||st==='PAUSED')&&idx<0&&el<LYR[0].s)nx=((LYR[0].s-el)/1000).toFixed(1)+' s';
   else if(idx>=0)nx=(idx+1<LYR.length)?((LYR[idx].e-el)/1000).toFixed(1)+' s':'end';
   ui.next.textContent=nx;
-  if(!scrubbing){ui.scrub.value=Math.round(el/1000);ui.scrubOut.textContent=mmss(el)}
+  if(!scrubbing){
+    var r=st==='DONE'?span:Math.max(0,Math.min(span,live?rel:0));
+    ui.scrub.value=Math.round(r/1000);ui.scrubOut.textContent=mmss(r);
+  }
 }
 var music=$('#music'),musicOn=$('#musicOn'),musicSt=$('#musicSt');
 var unlocking=false,blocked=false,musicBroken=false,lastAudioChk=0;
@@ -871,7 +870,7 @@ $('#syncOff').addEventListener('input',function(e){sim.sync=+e.target.value;$('#
 ui.scrub.addEventListener('pointerdown',function(){scrubbing=true;if(music&&music.paused)unlockAudio()});
 ui.scrub.addEventListener('pointerup',function(){scrubbing=false});
 ui.scrub.addEventListener('blur',function(){scrubbing=false});
-ui.scrub.addEventListener('input',function(e){scrubbing=true;var ms=+e.target.value*1000;ui.scrubOut.textContent=mmss(ms);sim.seek(ms);updateUi(true)});
+ui.scrub.addEventListener('input',function(e){scrubbing=true;var ms=+e.target.value*1000;ui.scrubOut.textContent=mmss(ms);sim.seek(LYR[0].s+ms);updateUi(true)});
 ui.scrub.addEventListener('change',function(){scrubbing=false});
 updateStates();updateUi(true);
 
@@ -881,8 +880,8 @@ updateStates();updateUi(true);
   LYR.forEach(function(l){var d=document.createElement('div');d.style.flex=String(l.e-l.s);seg.appendChild(d)});
   var t=$('#tScan'),out=$('#tScanOut'),res=$('#scanOut');
   function run(){
-    var s=+t.value,ms=s*1000,idx=findIdx(ms);
-    out.textContent=mmss(ms);
+    var s=+t.value,ms=LYR[0].s+s*1000,idx=findIdx(ms);
+    out.textContent=mmss(s*1000);
     $$('div',seg).forEach(function(d,i){d.classList.toggle('on',i===idx)});
     if(idx>=0){var l=LYR[idx];res.textContent='line '+(idx+1)+' of '+LYR.length+': '+l.a+(l.b?' / '+l.b:'')}
     else if(ms<LYR[0].s)res.textContent='no line yet: countdown, first lyric in '+((LYR[0].s-ms)/1000).toFixed(0)+' s';

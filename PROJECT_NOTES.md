@@ -90,7 +90,7 @@ const Lyric lyrics[] = { ... };       // 17 entries
   - single line: `7x13B` bold, falls back to `6x10` if wider than 124 px, plus an underline that grows over the line's duration
   - two lines: `6x10`, centred at y=30 and y=43
   - three dots at bottom-right fill up over the line's duration
-  - no active lyric: "lirik dalam Ns..." with a mini bar, then a flashing big 5-4-3-2-1 countdown, or a blinking `~ ~ ~` (after the last line or in mid-song gaps)
+  - no active lyric: a flashing big countdown (rounded up, 5-4-3-2-1) before the next lyric, or a blinking `~ ~ ~` after the last line
 - **y 57-63 progress bar**: with elapsed `MM:SS` drawn in XOR mode (`setDrawColor(2)`) so it stays visible over the fill.
 
 ### Fonts
@@ -103,7 +103,7 @@ const Lyric lyrics[] = { ... };       // 17 entries
 
 ## 5. Current lyric timing (as in `lyrics_timestamps.h` and the `.ino`)
 
-The first lyric starts at **99.44 s** (measured from song start). The board therefore shows the "lirik dalam Ns..." countdown for ~1:39 before the first line. Song length is set to **178.573 s**. All 17 lines are contiguous (each `endMs` equals the next `startMs`), so there are no `~ ~ ~` gaps mid-song. The only one is the 2 s tail after the last line.
+The first lyric starts at **99.44 s** (measured from song start). With `PRE_ROLL_MS` = 5000 the board flashes a 5-4-3-2-1 countdown after BOOT, then shows the first line. Song length is set to **178.573 s**. All 17 lines are contiguous (each `endMs` equals the next `startMs`), so there are no `~ ~ ~` gaps mid-song. The only one is the 2 s tail after the last line.
 
 ## 6. Issues found in the first review — status
 
@@ -125,7 +125,7 @@ All fixed in code (not compiled or run on hardware; no `arduino-cli` was availab
 Workflow is now: edit `LYRICS` -> run stamper (T at song start, SPACE per line, Q) -> re-flash.
 
 ### Changes after first hardware test
-- **Pre-roll:** `PRE_ROLL_MS` (5000) in the `.ino`. Pressing BOOT now jumps the internal clock so the first lyric appears 5 s later. **Start the song at 1:34 (first lyric time minus 5 s) when you press BOOT**, since the progress bar clock shows song position. Set to 0 to play from 00:00 again. The last-5-seconds countdown now rounds up (5,4,3,2,1).
+- **Pre-roll:** `PRE_ROLL_MS` (5000) in the `.ino`. Pressing BOOT now jumps the internal clock so the first lyric appears 5 s later. **Start the song at 1:34 (first lyric time minus 5 s) when you press BOOT**, since the progress bar clock shows song position. The countdown flashes a big number that rounds up (5,4,3,2,1). The old "lirik dalam Ns..." screen was removed, so keep `PRE_ROLL_MS` small (a few seconds).
 - **Progress bar:** the first attempt (making the frame 7 px tall) did not fix the garbled look. The real cause was the XOR'd clock text drawn *inside* the bar: digits as tall as the bar's interior turned into stripes over the fill. The bar is now plain (frame y 58-62 + fill) and the clock `MM:SS/MM:SS` is drawn right-aligned in the header (`drawClock()`). The pause `II` moved to x=62.
 
 - **Bar/clock zero point:** with the pre-roll, the internal clock starts at ~1:34, so the bar began mid-way. Progress and the header clock are now measured from the first lyric to the end of the song (`progressBase()`), so both start at 0 when the lyrics begin.

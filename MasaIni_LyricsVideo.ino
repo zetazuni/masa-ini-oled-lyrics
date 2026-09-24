@@ -64,9 +64,9 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 // Use this instead of re-stamping when the whole song is slightly off.
 #define SYNC_OFFSET_MS  (0L)
 
-// Time between pressing BOOT and the first lyric. Playback starts this many
-// ms before the first lyric, so start the song at that position (see the
-// progress-bar clock). 0 = play the whole song from 00:00.
+// Countdown length: time between pressing BOOT and the first lyric. Playback
+// starts this many ms before the first lyric, so start the song at that
+// position. The screen flashes a big countdown (5,4,3,2,1) until the lyric.
 #define PRE_ROLL_MS  (5000UL)
 
 // ═══════════════════════════════════════════════
@@ -318,32 +318,13 @@ void drawLyricsScreen(int idx, unsigned long elapsed, bool paused) {
     }
 
     if (nextIdx >= 0) {
-      unsigned long waitMs   = lyrics[nextIdx].startMs - elapsed;
-      unsigned long waitSecs = waitMs / 1000;
-
-      if (waitMs > 5000) {
-        // Show countdown in seconds
-        char buf[32];
-        snprintf(buf, sizeof(buf), "lirik dalam %lus...", waitSecs);
-        disp.setFont(u8g2_font_5x7_tf);
-        drawCentred(buf, 33);
-
-        // Mini fill bar showing how far through the wait we are
-        int barW = 90;
-        int barX = (128 - barW) / 2;
-        int fill  = (int)((float)elapsed / lyrics[nextIdx].startMs * barW);
-        fill = min(fill, barW);
-        disp.drawFrame(barX, 40, barW, 4);
-        if (fill > 0) disp.drawBox(barX, 40, fill, 4);
-
-      } else {
-        // Last 5 seconds — flash large countdown
-        disp.setFont(u8g2_font_7x13B_tf);
-        if ((millis() / 250) % 2 == 0) {
-          char buf[12];
-          snprintf(buf, sizeof(buf), "%lu", (waitMs + 999) / 1000);   // round up: 5,4,3,2,1
-          drawCentred(buf, 38);
-        }
+      // Countdown before the next lyric: flash a large number, rounded up (5,4,3,2,1)
+      unsigned long waitMs = lyrics[nextIdx].startMs - elapsed;
+      disp.setFont(u8g2_font_7x13B_tf);
+      if ((millis() / 250) % 2 == 0) {
+        char buf[12];
+        snprintf(buf, sizeof(buf), "%lu", (waitMs + 999) / 1000);
+        drawCentred(buf, 38);
       }
     } else {
       // Between lyric lines (brief gap mid-song)
