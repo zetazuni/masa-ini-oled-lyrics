@@ -183,8 +183,8 @@ Check with `sha256sum documentation/MasaIni_Presentation.html` and compare it wi
 
 | | |
 |---|---|
-| Last deployed | 2026-09-24 (countdown-only wait screen, sliders from first lyric) |
-| Presentation SHA-256 at that deploy | `431fb6be220aac40237a2c5d6147df5e98cd95138e796570561621fae9b2ed79` |
-| Git commit at that deploy | `8848fbf` |
+| Last deployed | 2026-09-25 (music follows the speed setting, hidden Ask Claude button fix) |
+| Presentation SHA-256 at that deploy | `c471fe5b9563423dd467b9f35b9ac3eb3e1a8ea41883eb3b87b50cf2f584bbf5` |
+| Git commit at that deploy | `72266c8` |
 
 After a deploy, update this table with the new hash and date.
